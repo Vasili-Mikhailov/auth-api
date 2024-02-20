@@ -2,15 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Model;
 
-class User extends Authenticatable
+class User extends Model
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasFactory;
 
     /**
      * The attributes that are mass assignable.
@@ -18,27 +15,66 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
-        'email',
-        'password',
+        'first_name',
+        'last_name',
+        'city',
+        'country',
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * The primary key associated with the table.
      *
-     * @var array<int, string>
+     * @var string
      */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    protected $primaryKey = 'id';
 
     /**
-     * The attributes that should be cast.
+     * Indicates if the model's ID is auto-incrementing.
      *
-     * @var array<string, string>
+     * @var bool
      */
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-    ];
+    public $incrementing = false;
+
+    /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = false;
+
+    /**
+     * Get the session associated with the user.
+     */
+    public function session()
+    {
+        return $this->hasOne(UserSession::class);
+    }
+
+    /**
+     * Update or create user
+     *
+     * @param  array  $userInfo
+     * @return array
+     */
+    public static function createOrUpdateUser($userInfo)
+    {
+        $user = User::find($userInfo['id']);
+        if($user){
+            $user->id = $userInfo['id'];
+            $user->first_name = $userInfo['first_name'];
+            $user->last_name = $userInfo['last_name'];
+            $user->city = $userInfo['city'];
+            $user->country = $userInfo['country'];
+            $user->save();
+        } else {
+            $user = new User;
+            $user->id = $userInfo['id'];
+            $user->first_name = $userInfo['first_name'];
+            $user->last_name = $userInfo['last_name'];
+            $user->city = $userInfo['city'];
+            $user->country = $userInfo['country'];
+            $user->save();
+        }
+        return $user->toArray();
+    }
 }
